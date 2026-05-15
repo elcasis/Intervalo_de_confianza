@@ -44,12 +44,14 @@
         .pb2{color:#7dd3fc;background:rgba(125,211,252,.07);border:1px solid rgba(125,211,252,.13)}
         .pb3{color:var(--pink);background:rgba(244,114,182,.07);border:1px solid rgba(244,114,182,.13)}
         .pb4{color:var(--warn);background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.13)}
-        .pb5{color:var(--success);background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.13)}
+        .pb5{color:#a78bfa;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.13)}
+        .pb6{color:var(--success);background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.13)}
         .bridge-div{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:1.25rem 0}
         .bridge-res{font-family:'JetBrains Mono',monospace;text-align:center;padding:.8rem 1rem;border-radius:10px;font-size:.9rem;animation:ein .4s ease}
         .br-pur{background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.18);color:var(--accent2)}
         .br-pink{background:rgba(244,114,182,.05);border:1px solid rgba(244,114,182,.18);color:var(--pink)}
         .br-warn{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.18);color:var(--warn)}
+        .br-viol{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.18);color:#a78bfa}
         .br-ok{background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.18);color:var(--success)}
         .z-table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:.75rem;margin-top:.5rem;background:var(--card2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
         .z-table th,.z-table td{padding:.4rem .2rem;text-align:center;border:1px solid var(--border)}
@@ -104,42 +106,28 @@ function normCDF(x){const a1=.254829592,a2=-.284496736,a3=1.421413741,a4=-1.4531
 function fmtN(v){if(Number.isInteger(v))return v.toString();let s=v.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');return s}
 function shuf(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
 
-// Generador de Tabla Z
 function generateMiniZTable(targetZ){
     const absZ=Math.abs(targetZ);const intP=Math.floor(absZ);const decP=Math.round((absZ-intP)*10);const baseZ=intP+decP/10;const startZ=Math.max(0,baseZ-.2);
     let h=`<table class="z-table"><thead><tr><th>Z</th><th>0.00</th><th>0.01</th><th>0.02</th><th>0.03</th><th>0.04</th><th>0.05</th><th>0.06</th><th>0.07</th><th>0.08</th><th>0.09</th></tr></thead><tbody>`;
     for(let i=0;i<5;i++){const rZ=startZ+i*.1;if(rZ>3.5)break;const rI=Math.floor(rZ);const rD=Math.round((rZ-rI)*10);h+=`<tr><td style="color:var(--accent2);font-weight:700">${rI}.${rD}</td>`;for(let j=0;j<10;j++){const cZ=rZ+j*.01;const p=normCDF(cZ);const hit=Math.round(cZ*100)===Math.round(absZ*100);h+=`<td class="${hit?'z-hit':''}">${p.toFixed(4)}</td>`}h+=`</tr>`}return h+`</tbody></table>`}
 
-// Generador de Tabla t de Student
 function generateMiniTTable(targetNu, targetAlpha){
     const alphas=[0.10, 0.05, 0.025, 0.01, 0.005];
-    // Valores críticos aproximados de la t para el juego (suficientemente precisos para la tabla visual)
     const tData={
-        10:{0.10:1.372,0.05:1.812,0.025:2.228,0.01:2.764,0.005:3.169},
-        11:{0.10:1.363,0.05:1.796,0.025:2.201,0.01:2.718,0.005:3.106},
-        12:{0.10:1.356,0.05:1.782,0.025:2.179,0.01:2.681,0.005:3.055},
-        13:{0.10:1.350,0.05:1.771,0.025:2.160,0.01:2.650,0.005:3.012},
-        14:{0.10:1.345,0.05:1.761,0.025:2.145,0.01:2.624,0.005:2.977},
-        15:{0.10:1.341,0.05:1.753,0.025:2.131,0.01:2.602,0.005:2.947},
-        16:{0.10:1.337,0.05:1.746,0.025:2.120,0.01:2.583,0.005:2.921},
-        17:{0.10:1.333,0.05:1.740,0.025:2.110,0.01:2.567,0.005:2.898},
-        18:{0.10:1.330,0.05:1.734,0.025:2.101,0.01:2.552,0.005:2.878},
-        19:{0.10:1.328,0.05:1.729,0.025:2.093,0.01:2.539,0.005:2.861},
-        20:{0.10:1.325,0.05:1.725,0.025:2.086,0.01:2.528,0.005:2.845},
-        24:{0.10:1.318,0.05:1.711,0.025:2.064,0.01:2.492,0.005:2.797},
-        25:{0.10:1.316,0.05:1.708,0.025:2.060,0.01:2.485,0.005:2.787},
-        29:{0.10:1.311,0.05:1.699,0.025:2.045,0.01:2.462,0.005:2.756},
+        10:{0.10:1.372,0.05:1.812,0.025:2.228,0.01:2.764,0.005:3.169},11:{0.10:1.363,0.05:1.796,0.025:2.201,0.01:2.718,0.005:3.106},
+        12:{0.10:1.356,0.05:1.782,0.025:2.179,0.01:2.681,0.005:3.055},13:{0.10:1.350,0.05:1.771,0.025:2.160,0.01:2.650,0.005:3.012},
+        14:{0.10:1.345,0.05:1.761,0.025:2.145,0.01:2.624,0.005:2.977},15:{0.10:1.341,0.05:1.753,0.025:2.131,0.01:2.602,0.005:2.947},
+        16:{0.10:1.337,0.05:1.746,0.025:2.120,0.01:2.583,0.005:2.921},17:{0.10:1.333,0.05:1.740,0.025:2.110,0.01:2.567,0.005:2.898},
+        18:{0.10:1.330,0.05:1.734,0.025:2.101,0.01:2.552,0.005:2.878},19:{0.10:1.328,0.05:1.729,0.025:2.093,0.01:2.539,0.005:2.861},
+        20:{0.10:1.325,0.05:1.725,0.025:2.086,0.01:2.528,0.005:2.845},24:{0.10:1.318,0.05:1.711,0.025:2.064,0.01:2.492,0.005:2.797},
+        25:{0.10:1.316,0.05:1.708,0.025:2.060,0.01:2.485,0.005:2.787},29:{0.10:1.311,0.05:1.699,0.025:2.045,0.01:2.462,0.005:2.756},
         30:{0.10:1.310,0.05:1.697,0.025:2.042,0.01:2.457,0.005:2.750}
     };
     let h=`<table class="z-table"><thead><tr><th>ν \\ α</th>${alphas.map(a=>`<th>${a}</th>`).join('')}</tr></thead><tbody>`;
     for(let nu=Math.max(10, targetNu-2); nu<=Math.min(30, targetNu+2); nu++){
         if(!tData[nu]) continue;
         h+=`<tr><td style="color:var(--accent2);font-weight:700">${nu}</td>`;
-        alphas.forEach(a => {
-            const val = tData[nu][a];
-            const hit = nu===targetNu && a===targetAlpha;
-            h+=`<td class="${hit?'z-hit':''}">${val.toFixed(3)}</td>`;
-        });
+        alphas.forEach(a => { const val = tData[nu][a]; const hit = nu===targetNu && a===targetAlpha; h+=`<td class="${hit?'z-hit':''}">${val.toFixed(3)}</td>`; });
         h+=`</tr>`;
     }
     return h+`</tbody></table>`;
@@ -186,21 +174,36 @@ function mkChips(phase, ex){
         ok.push({id:'v_z3',d:fmtN(ex.crit)});
         dist = [fmtN(ex.crit+0.5), fmtN(ex.crit-0.3), fmtN(1.96), fmtN(1.645)].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
     } else if(phase===4){
-        const num = ex.sigma || ex.s;
-        const sqN = Math.sqrt(ex.n || (ex.nmin || 10));
-        const se = ex.se || (num / sqN);
-        ok.push({id:'v_num4',d:fmtN(num)});
-        if(ex.n) ok.push({id:'v_sq4',d:fmtN(sqN)});
-        ok.push({id:'v_se4',d:fmtN(se)});
-        dist = [fmtN(num+1), fmtN(sqN+1), fmtN(se+0.5), '0.5'].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
-    } else if(phase===5){
-        if(ex.type==='interval'){
-            ok.push({id:'v_e5',d:fmtN(ex.margin)});
-            ok.push({id:'v_li5',d:fmtN(ex.lower)});
-            ok.push({id:'v_ls5',d:fmtN(ex.upper)});
-            dist = [fmtN(ex.lower-1), fmtN(ex.upper+1), fmtN(ex.margin+1)].slice(0,3);
+        if(ex.type === 'sample_size'){
+            ok.push({id:'v_crit4',d:fmtN(ex.crit)});
+            ok.push({id:'v_sig4',d:fmtN(ex.sigma)});
+            ok.push({id:'v_num4',d:fmtN(ex.crit * ex.sigma)});
+            dist = [fmtN(ex.sigma+1), fmtN(ex.crit*ex.sigma+5), '1.5'].slice(0,3);
         } else {
-            ok.push({id:'v_n5',d:String(ex.nmin)});
+            const num = ex.sigma || ex.s;
+            const sqN = Math.sqrt(ex.n);
+            ok.push({id:'v_num4',d:fmtN(num)});
+            ok.push({id:'v_sq4',d:fmtN(sqN)});
+            ok.push({id:'v_se4',d:fmtN(ex.se)});
+            dist = [fmtN(num+1), fmtN(sqN+1), fmtN(ex.se+0.5), '0.5'].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
+        }
+    } else if(phase===5){
+        if(ex.type === 'sample_size'){
+            ok.push({id:'v_e5',d:fmtN(ex.e)});
+            dist = [fmtN(ex.e+1), fmtN(ex.e-0.5), '0.5'].slice(0,3);
+        } else {
+            ok.push({id:'v_crit5',d:fmtN(ex.crit)});
+            ok.push({id:'v_se5',d:fmtN(ex.se)});
+            ok.push({id:'v_e5',d:fmtN(ex.margin)});
+            dist = [fmtN(ex.crit+0.5), fmtN(ex.se+0.2), fmtN(ex.margin+1)].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
+        }
+    } else if(phase===6){
+        if(ex.type==='interval'){
+            ok.push({id:'v_li6',d:fmtN(ex.lower)});
+            ok.push({id:'v_ls6',d:fmtN(ex.upper)});
+            dist = [fmtN(ex.lower-1), fmtN(ex.upper+1), fmtN(ex.margin)].slice(0,3);
+        } else {
+            ok.push({id:'v_n6',d:String(ex.nmin)});
             dist = [String(ex.nmin-10), String(ex.nmin+5), String(Math.round(ex.nmin/2))].slice(0,3);
         }
     }
@@ -257,20 +260,29 @@ function loadEx(idx){
         <div id="br3" class="hidden"></div>
 
         <div id="ph4" class="hidden">
-            <div class="phase-badge pb4"><i class="fas fa-calculator mr-1.5"></i>Fase 4: Error Estándar (SE)</div>
+            <div class="phase-badge pb4"><i class="fas fa-calculator mr-1.5"></i>Fase 4: Error Estándar / Numerador</div>
             <div class="formula-board mb-4" id="fb4"></div>
             <div class="flex flex-wrap gap-2 mb-3" id="ch4"></div>
             <div class="flex gap-2 mb-3"><button class="btn-icon" id="hBtn_ph4" onclick="useHint()"><i class="fas fa-lightbulb"></i></button></div>
-            <div id="ca4" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP4()"><i class="fas fa-check mr-1.5"></i>Confirmar SE</button></div>
+            <div id="ca4" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP4()"><i class="fas fa-check mr-1.5"></i>Confirmar</button></div>
         </div>
         <div id="br4" class="hidden"></div>
 
         <div id="ph5" class="hidden">
-            <div class="phase-badge pb5"><i class="fas fa-flag-checkered mr-1.5"></i>Fase 5: Resultado Final</div>
+            <div class="phase-badge pb5"><i class="fas fa-arrows-alt-h mr-1.5"></i>Fase 5: Margen de Error (e)</div>
             <div class="formula-board mb-4" id="fb5"></div>
             <div class="flex flex-wrap gap-2 mb-3" id="ch5"></div>
             <div class="flex gap-2 mb-3"><button class="btn-icon" id="hBtn_ph5" onclick="useHint()"><i class="fas fa-lightbulb"></i></button></div>
-            <div id="ca5" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP5()"><i class="fas fa-check mr-1.5"></i>Finalizar</button></div>
+            <div id="ca5" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP5()"><i class="fas fa-check mr-1.5"></i>Confirmar Margen</button></div>
+        </div>
+        <div id="br5" class="hidden"></div>
+
+        <div id="ph6" class="hidden">
+            <div class="phase-badge pb6"><i class="fas fa-flag-checkered mr-1.5"></i>Fase 6: Resultado Final</div>
+            <div class="formula-board mb-4" id="fb6"></div>
+            <div class="flex flex-wrap gap-2 mb-3" id="ch6"></div>
+            <div class="flex gap-2 mb-3"><button class="btn-icon" id="hBtn_ph6" onclick="useHint()"><i class="fas fa-lightbulb"></i></button></div>
+            <div id="ca6" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP6()"><i class="fas fa-check mr-1.5"></i>Finalizar</button></div>
         </div>
         <div id="nxtA"></div>
     </div>`;
@@ -289,22 +301,29 @@ function loadEx(idx){
     // Fase 4 Dinámica
     let fb4html;
     if(isSample) {
-        fb4html = `<span class="ftxt">Calcularemos n usando la fórmula directa.</span>`;
+        fb4html = `<span class="ftxt">Z<sub>α/2</sub> · σ = </span><span class="fslot" data-type="v_crit4" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_sig4" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_num4" onclick="onSlot(this)">?</span>`;
     } else {
-        const sqN = Math.sqrt(ex.n);
         fb4html = `<span class="ftxt">SE = ${symbol}/√n = </span><span class="fslot" data-type="v_num4" onclick="onSlot(this)">?</span><span class="ftxt"> / </span><span class="fslot" data-type="v_sq4" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_se4" onclick="onSlot(this)">?</span>`;
     }
     document.getElementById('fb4').innerHTML = fb4html;
 
-    // Fase 5 Dinámica
+    // Fase 5 Dinámica (NUEVA)
     let fb5html;
-    if(isSample){
-        fb5html = `<span class="ftxt">Tamaño muestral n = </span><span class="fslot" data-type="v_n5" onclick="onSlot(this)">?</span>`;
+    if(isSample) {
+        fb5html = `<span class="ftxt">Error máximo admitido e = </span><span class="fslot" data-type="v_e5" onclick="onSlot(this)">?</span>`;
     } else {
-        fb5html = `<span class="ftxt">Error (e) = </span><span class="fslot" data-type="v_e5" onclick="onSlot(this)">?</span>`;
-        fb5html += `<span class="ftxt" style="margin-left:10px">Intervalo: [ </span><span class="fslot" data-type="v_li5" onclick="onSlot(this)">?</span><span class="ftxt"> , </span><span class="fslot" data-type="v_ls5" onclick="onSlot(this)">?</span><span class="ftxt"> ]</span>`;
+        fb5html = `<span class="ftxt">Margen de error e = Z<sub>α/2</sub> · SE = </span><span class="fslot" data-type="v_crit5" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_se5" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_e5" onclick="onSlot(this)">?</span>`;
     }
     document.getElementById('fb5').innerHTML = fb5html;
+
+    // Fase 6 Dinámica
+    let fb6html;
+    if(isSample){
+        fb6html = `<span class="ftxt">Tamaño muestral n = (Z·σ / e)² = </span><span class="fslot" data-type="v_n6" onclick="onSlot(this)">?</span>`;
+    } else {
+        fb6html = `<span class="ftxt">Intervalo: [ x̄ - e , x̄ + e ] = [ </span><span class="fslot" data-type="v_li6" onclick="onSlot(this)">?</span><span class="ftxt"> , </span><span class="fslot" data-type="v_ls6" onclick="onSlot(this)">?</span><span class="ftxt"> ]</span>`;
+    }
+    document.getElementById('fb6').innerHTML = fb6html;
 
     loadChipsForPhase(1, ex);
 }
@@ -318,7 +337,7 @@ function onChip(cid,ph){if(S.phase!==ph)return;const el=document.querySelector(`
 
 function onSlot(el){
     const type=el.dataset.type;const ph=S.phase;if(el.classList.contains('filled')){rmType(type,ph);return}if(!S.sel){toast('Selecciona una ficha primero','i');return}
-    const validIds=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_e5','v_li5','v_ls5','v_n5'];
+    const validIds=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'];
     if(S.sel===type && validIds.includes(type)) plType(type,ph);
     else{S.errs[type]=(S.errs[type]||0)+1;S.perfect=false;el.classList.add('wf');setTimeout(()=>el.classList.remove('wf'),420);toast('Ese valor no va aquí','e')}
 }
@@ -331,14 +350,15 @@ function chkFilled(ph){
     if(ph===1){req.push('v_d1'); const ex=EX[S.idx]; if(ex.type==='sample_size'){req.push('v_s1','v_e1')} else {req.push('v_n1','v_x1','v_s1')}}
     else if(ph===2)req=['v_c2','v_a2'];
     else if(ph===3)req=['v_z3'];
-    else if(ph===4){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_num4']; else req=['v_num4','v_sq4','v_se4']; }
-    else if(ph===5){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_n5']; else req=['v_e5','v_li5','v_ls5']; }
+    else if(ph===4){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_crit4','v_sig4','v_num4']; else req=['v_num4','v_sq4','v_se4']; }
+    else if(ph===5){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_e5']; else req=['v_crit5','v_se5','v_e5']; }
+    else if(ph===6){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_n6']; else req=['v_li6','v_ls6']; }
     document.getElementById(`ca${ph}`).classList.toggle('hidden',!req.every(t=>S.placed[t]));
 }
 
 function useHint(){
-    let ph=S.phase, types=[], labels={v_d1:'Distribución',v_n1:'n',v_x1:'x̄',v_s1:'σ/s',v_e1:'Error e',v_c2:'Confianza',v_a2:'α/2',v_z3:'Valor Crítico',v_num4:'Numerador',v_sq4:'√n',v_se4:'SE',v_e5:'Error Margen',v_li5:'Límite Inf',v_ls5:'Límite Sup',v_n5:'Tamaño n'};
-    if(ph===1)types=['v_d1','v_n1','v_x1','v_s1','v_e1']; else if(ph===2)types=['v_c2','v_a2']; else if(ph===3)types=['v_z3']; else if(ph===4)types=['v_num4','v_sq4','v_se4']; else if(ph===5)types=['v_e5','v_li5','v_ls5','v_n5'];
+    let ph=S.phase, types=[], labels={v_d1:'Distribución',v_n1:'n',v_x1:'x̄',v_s1:'σ/s',v_e1:'Error e',v_c2:'Confianza',v_a2:'α/2',v_z3:'Valor Crítico',v_num4:'Num/SE',v_sq4:'√n',v_se4:'SE',v_crit4:'Crítico',v_sig4:'Sigma',v_crit5:'Crítico',v_se5:'SE',v_e5:'Margen e',v_li6:'Límite Inf',v_ls6:'Límite Sup',v_n6:'Tamaño n'};
+    if(ph===1)types=['v_d1','v_n1','v_x1','v_s1','v_e1']; else if(ph===2)types=['v_c2','v_a2']; else if(ph===3)types=['v_z3']; else if(ph===4)types=['v_num4','v_sq4','v_se4','v_crit4','v_sig4']; else if(ph===5)types=['v_crit5','v_se5','v_e5']; else if(ph===6)types=['v_li6','v_ls6','v_n6'];
     const empty=types.filter(t=>!S.placed[t]).filter(t=>document.querySelector(`#fb${ph} .fslot[data-type="${t}"]`)); 
     if(!empty.length||S.hintCt>=3)return;
     const pick=empty[Math.floor(Math.random()*empty.length)];S.hints[pick]=true;S.hintCt++;S.perfect=false;
@@ -351,12 +371,9 @@ function calcP1(){
     const ex=EX[S.idx]; lockPhase(1);
     const bridge=document.getElementById('br1');bridge.classList.remove('hidden');
     let formulaHtml = '';
-    if(ex.type === 'sample_size') {
-        formulaHtml = `Fórmula Tamaño Muestral: <br> n = ( Z<sub>α/2</sub> · σ / e )<sup>2</sup>`;
-    } else {
-        if(ex.dist === 'Z') formulaHtml = `Fórmula Intervalo Z: <br> x̄ ± Z<sub>α/2</sub> · ( σ / √n )`;
-        else formulaHtml = `Fórmula Intervalo t de Student: <br> x̄ ± t<sub>α/2</sub> · ( s / √n )`;
-    }
+    if(ex.type === 'sample_size') formulaHtml = `Fórmula Tamaño Muestral: <br> n = ( Z<sub>α/2</sub> · σ / e )<sup>2</sup>`;
+    else if(ex.dist === 'Z') formulaHtml = `Fórmula Intervalo Z: <br> x̄ ± Z<sub>α/2</sub> · ( σ / √n )`;
+    else formulaHtml = `Fórmula Intervalo t de Student: <br> x̄ ± t<sub>α/2</sub> · ( s / √n )`;
     bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-pur">Distribución elegida: ${ex.dist}.<br>${formulaHtml}</div><div class="bridge-div"></div>`;burst(bridge.querySelector('.bridge-res'));
     setTimeout(()=>{S.phase=2;document.getElementById('ph2').classList.remove('hidden');loadChipsForPhase(2,ex);document.getElementById('ph2').scrollIntoView({behavior:'smooth',block:'center'})},600);
 }
@@ -367,7 +384,6 @@ function calcP2(){
     bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-pink">Confianza ${fmtN(ex.conf)} → Significación α=${fmtN(ex.alpha)} → Buscamos α/2 = ${fmtN(ex.alpha/2)}</div><div class="bridge-div"></div>`;burst(bridge.querySelector('.bridge-res'));
     setTimeout(()=>{
         S.phase=3;document.getElementById('ph3').classList.remove('hidden');loadChipsForPhase(3,ex);
-        // Renderizar tabla correspondiente
         if(ex.dist === 'Z') document.getElementById('tableCont').innerHTML = generateMiniZTable(ex.crit);
         else document.getElementById('tableCont').innerHTML = generateMiniTTable(ex.nu, ex.alpha/2);
         document.getElementById('ph3').scrollIntoView({behavior:'smooth',block:'center'});
@@ -384,29 +400,31 @@ function calcP3(){
 function calcP4(){
     const ex=EX[S.idx]; lockPhase(4);
     const bridge=document.getElementById('br4');bridge.classList.remove('hidden');
-    if(ex.type==='sample_size'){
-         bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-pur">Usaremos σ=${fmtN(ex.sigma)} y e=${fmtN(ex.e)} en la fórmula de n</div><div class="bridge-div"></div>`;
-    } else {
-         bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-warn">Error Estándar (SE) = ${fmtN(ex.se)}</div><div class="bridge-div"></div>`;
-    }
+    if(ex.type==='sample_size') bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-warn">Numerador calculado: Z · σ = ${fmtN(ex.crit * ex.sigma)}</div><div class="bridge-div"></div>`;
+    else bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-warn">Error Estándar (SE) = ${fmtN(ex.se)}</div><div class="bridge-div"></div>`;
     burst(bridge.querySelector('.bridge-res'));
     setTimeout(()=>{S.phase=5;document.getElementById('ph5').classList.remove('hidden');loadChipsForPhase(5,ex);document.getElementById('ph5').scrollIntoView({behavior:'smooth',block:'center'})},600);
 }
 
 function calcP5(){
     const ex=EX[S.idx]; lockPhase(5);
-    
     const bridge=document.getElementById('br5');bridge.classList.remove('hidden');
-    if(ex.type==='interval'){
-        bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-ok">Intervalo de Confianza: [ ${fmtN(ex.lower)} , ${fmtN(ex.upper)} ]</div><div class="bridge-div"></div>`;
-    } else {
-        bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-ok">Tamaño muestral mínimo necesario: n = ${ex.nmin}</div><div class="bridge-div"></div>`;
-    }
+    if(ex.type==='sample_size') bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-viol">Error máximo exigido: e = ${fmtN(ex.e)}</div><div class="bridge-div"></div>`;
+    else bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-viol">Margen de error calculado: e = ${fmtN(ex.margin)}</div><div class="bridge-div"></div>`;
+    burst(bridge.querySelector('.bridge-res'));
+    setTimeout(()=>{S.phase=6;document.getElementById('ph6').classList.remove('hidden');loadChipsForPhase(6,ex);document.getElementById('ph6').scrollIntoView({behavior:'smooth',block:'center'})},600);
+}
+
+function calcP6(){
+    const ex=EX[S.idx]; lockPhase(6);
+    const bridge=document.getElementById('br6');bridge.classList.remove('hidden');
+    if(ex.type==='interval') bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-ok">Intervalo de Confianza: [ ${fmtN(ex.lower)} , ${fmtN(ex.upper)} ]</div><div class="bridge-div"></div>`;
+    else bridge.innerHTML=`<div class="bridge-div"></div><div class="bridge-res br-ok">Tamaño muestral mínimo necesario: n = ${ex.nmin}</div><div class="bridge-div"></div>`;
     burst(bridge.querySelector('.bridge-res'));
 
     setTimeout(()=>{
         let pts=0;
-        ['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_e5','v_li5','v_ls5','v_n5'].forEach(t=>{
+        ['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'].forEach(t=>{
             if(S.placed[t]){ let b=100; if(S.hints[t])b=25; else if(S.errs[t]>0)b=50; pts+=b; }
         });
         if(S.perfect)pts+=200; S.score+=pts;
@@ -442,4 +460,4 @@ function startGame(){S={idx:0,phase:1,score:0,streak:0,maxStreak:0,results:[],se
 document.addEventListener('click',e=>{if(!e.target.closest('.chip')&&!e.target.closest('.fslot')&&S.sel){document.querySelectorAll(`#ch${S.phase} .chip.sel`).forEach(c=>c.classList.remove('sel'));S.sel=null}});
 </script>
 </body>
-</html>  
+</html>
