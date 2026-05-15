@@ -35,6 +35,7 @@
         .fslot.wf{animation:wfl .4s ease} @keyframes wfl{0%,100%{border-color:var(--slot-border)}30%{border-color:var(--error);background:rgba(248,113,113,.15)}}
         .fslot.hg{border-color:var(--accent2)!important;box-shadow:0 0 10px rgba(125,211,252,.25);animation:hgl 1.5s ease-in-out infinite} @keyframes hgl{0%,100%{box-shadow:0 0 8px rgba(125,211,252,.2)}50%{box-shadow:0 0 16px rgba(125,211,252,.4)}}
         .fslot.done{border-color:var(--success);background:rgba(52,211,153,.1);color:var(--success);cursor:default;border-style:solid} .fslot.done:hover{border-color:var(--success);background:rgba(52,211,153,.1)}
+        .res-txt{color:var(--warn);font-weight:700;font-size:1.05rem}
         .chip{display:inline-flex;align-items:center;justify-content:center;padding:.4rem .9rem;background:var(--chip-bg);border:1.5px solid var(--chip-border);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:var(--fg);cursor:pointer;transition:all .2s;user-select:none}
         .chip:hover:not(.used){border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
         .chip.sel{border-color:var(--accent2);background:rgba(56,189,248,.12);color:var(--accent2);box-shadow:0 0 16px rgba(56,189,248,.2);transform:translateY(-3px)}
@@ -177,15 +178,13 @@ function mkChips(phase, ex){
         if(ex.type === 'sample_size'){
             ok.push({id:'v_crit4',d:fmtN(ex.crit)});
             ok.push({id:'v_sig4',d:fmtN(ex.sigma)});
-            ok.push({id:'v_num4',d:fmtN(ex.crit * ex.sigma)});
             dist = [fmtN(ex.sigma+1), fmtN(ex.crit*ex.sigma+5), '1.5'].slice(0,3);
         } else {
             const num = ex.sigma || ex.s;
             const sqN = Math.sqrt(ex.n);
             ok.push({id:'v_num4',d:fmtN(num)});
             ok.push({id:'v_sq4',d:fmtN(sqN)});
-            ok.push({id:'v_se4',d:fmtN(ex.se)});
-            dist = [fmtN(num+1), fmtN(sqN+1), fmtN(ex.se+0.5), '0.5'].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
+            dist = [fmtN(num+1), fmtN(sqN+1), '0.5'].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
         }
     } else if(phase===5){
         if(ex.type === 'sample_size'){
@@ -194,7 +193,6 @@ function mkChips(phase, ex){
         } else {
             ok.push({id:'v_crit5',d:fmtN(ex.crit)});
             ok.push({id:'v_se5',d:fmtN(ex.se)});
-            ok.push({id:'v_e5',d:fmtN(ex.margin)});
             dist = [fmtN(ex.crit+0.5), fmtN(ex.se+0.2), fmtN(ex.margin+1)].filter(d => !ok.map(o=>o.d).includes(d)).slice(0,3);
         }
     } else if(phase===6){
@@ -282,9 +280,9 @@ function loadEx(idx){
             <div class="formula-board mb-4" id="fb6"></div>
             <div class="flex flex-wrap gap-2 mb-3" id="ch6"></div>
             <div class="flex gap-2 mb-3"><button class="btn-icon" id="hBtn_ph6" onclick="useHint()"><i class="fas fa-lightbulb"></i></button></div>
-            <div id="ca6" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP6()"><i class="fas fa-check mr-1.5"></i>Finalizar</button></div>
+            <div id="ca6" class="hidden"><button class="btn-p btn-sm w-full" onclick="calcP6()"><i class="fas fa-check mr-1.5"></i>Finalizar y Comprobar</button></div>
         </div>
-        <div id="nxtA"></div>
+        <div id="nxtA" class="mt-4"></div>
     </div>`;
     
     // Fase 1 Dinámica
@@ -298,21 +296,21 @@ function loadEx(idx){
     }
     document.getElementById('fb1').innerHTML = fb1html;
 
-    // Fase 4 Dinámica
+    // Fase 4 Dinámica (El ejercicio da el resultado de la operación)
     let fb4html;
     if(isSample) {
-        fb4html = `<span class="ftxt">Z<sub>α/2</sub> · σ = </span><span class="fslot" data-type="v_crit4" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_sig4" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_num4" onclick="onSlot(this)">?</span>`;
+        fb4html = `<span class="ftxt">Z<sub>α/2</sub> · σ = </span><span class="fslot" data-type="v_crit4" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_sig4" onclick="onSlot(this)">?</span><span class="ftxt"> = <span class="res-txt">${fmtN(ex.crit * ex.sigma)}</span></span>`;
     } else {
-        fb4html = `<span class="ftxt">SE = ${symbol}/√n = </span><span class="fslot" data-type="v_num4" onclick="onSlot(this)">?</span><span class="ftxt"> / </span><span class="fslot" data-type="v_sq4" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_se4" onclick="onSlot(this)">?</span>`;
+        fb4html = `<span class="ftxt">SE = ${symbol}/√n = </span><span class="fslot" data-type="v_num4" onclick="onSlot(this)">?</span><span class="ftxt"> / </span><span class="fslot" data-type="v_sq4" onclick="onSlot(this)">?</span><span class="ftxt"> = <span class="res-txt">${fmtN(ex.se)}</span></span>`;
     }
     document.getElementById('fb4').innerHTML = fb4html;
 
-    // Fase 5 Dinámica (NUEVA)
+    // Fase 5 Dinámica (El ejercicio da el resultado de la operación)
     let fb5html;
     if(isSample) {
         fb5html = `<span class="ftxt">Error máximo admitido e = </span><span class="fslot" data-type="v_e5" onclick="onSlot(this)">?</span>`;
     } else {
-        fb5html = `<span class="ftxt">Margen de error e = Z<sub>α/2</sub> · SE = </span><span class="fslot" data-type="v_crit5" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_se5" onclick="onSlot(this)">?</span><span class="ftxt"> = </span><span class="fslot" data-type="v_e5" onclick="onSlot(this)">?</span>`;
+        fb5html = `<span class="ftxt">Margen de error e = Z<sub>α/2</sub> · SE = </span><span class="fslot" data-type="v_crit5" onclick="onSlot(this)">?</span><span class="ftxt"> · </span><span class="fslot" data-type="v_se5" onclick="onSlot(this)">?</span><span class="ftxt"> = <span class="res-txt">${fmtN(ex.margin)}</span></span>`;
     }
     document.getElementById('fb5').innerHTML = fb5html;
 
@@ -337,7 +335,7 @@ function onChip(cid,ph){if(S.phase!==ph)return;const el=document.querySelector(`
 
 function onSlot(el){
     const type=el.dataset.type;const ph=S.phase;if(el.classList.contains('filled')){rmType(type,ph);return}if(!S.sel){toast('Selecciona una ficha primero','i');return}
-    const validIds=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'];
+    const validIds=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'];
     if(S.sel===type && validIds.includes(type)) plType(type,ph);
     else{S.errs[type]=(S.errs[type]||0)+1;S.perfect=false;el.classList.add('wf');setTimeout(()=>el.classList.remove('wf'),420);toast('Ese valor no va aquí','e')}
 }
@@ -350,15 +348,15 @@ function chkFilled(ph){
     if(ph===1){req.push('v_d1'); const ex=EX[S.idx]; if(ex.type==='sample_size'){req.push('v_s1','v_e1')} else {req.push('v_n1','v_x1','v_s1')}}
     else if(ph===2)req=['v_c2','v_a2'];
     else if(ph===3)req=['v_z3'];
-    else if(ph===4){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_crit4','v_sig4','v_num4']; else req=['v_num4','v_sq4','v_se4']; }
-    else if(ph===5){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_e5']; else req=['v_crit5','v_se5','v_e5']; }
+    else if(ph===4){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_crit4','v_sig4']; else req=['v_num4','v_sq4']; }
+    else if(ph===5){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_e5']; else req=['v_crit5','v_se5']; }
     else if(ph===6){ const ex=EX[S.idx]; if(ex.type==='sample_size') req=['v_n6']; else req=['v_li6','v_ls6']; }
     document.getElementById(`ca${ph}`).classList.toggle('hidden',!req.every(t=>S.placed[t]));
 }
 
 function useHint(){
-    let ph=S.phase, types=[], labels={v_d1:'Distribución',v_n1:'n',v_x1:'x̄',v_s1:'σ/s',v_e1:'Error e',v_c2:'Confianza',v_a2:'α/2',v_z3:'Valor Crítico',v_num4:'Num/SE',v_sq4:'√n',v_se4:'SE',v_crit4:'Crítico',v_sig4:'Sigma',v_crit5:'Crítico',v_se5:'SE',v_e5:'Margen e',v_li6:'Límite Inf',v_ls6:'Límite Sup',v_n6:'Tamaño n'};
-    if(ph===1)types=['v_d1','v_n1','v_x1','v_s1','v_e1']; else if(ph===2)types=['v_c2','v_a2']; else if(ph===3)types=['v_z3']; else if(ph===4)types=['v_num4','v_sq4','v_se4','v_crit4','v_sig4']; else if(ph===5)types=['v_crit5','v_se5','v_e5']; else if(ph===6)types=['v_li6','v_ls6','v_n6'];
+    let ph=S.phase, types=[], labels={v_d1:'Distribución',v_n1:'n',v_x1:'x̄',v_s1:'σ/s',v_e1:'Error e',v_c2:'Confianza',v_a2:'α/2',v_z3:'Valor Crítico',v_num4:'Num',v_sq4:'√n',v_crit4:'Crítico',v_sig4:'Sigma',v_crit5:'Crítico',v_se5:'SE',v_e5:'Margen e',v_li6:'Límite Inf',v_ls6:'Límite Sup',v_n6:'Tamaño n'};
+    if(ph===1)types=['v_d1','v_n1','v_x1','v_s1','v_e1']; else if(ph===2)types=['v_c2','v_a2']; else if(ph===3)types=['v_z3']; else if(ph===4)types=['v_num4','v_sq4','v_crit4','v_sig4']; else if(ph===5)types=['v_crit5','v_se5','v_e5']; else if(ph===6)types=['v_li6','v_ls6','v_n6'];
     const empty=types.filter(t=>!S.placed[t]).filter(t=>document.querySelector(`#fb${ph} .fslot[data-type="${t}"]`)); 
     if(!empty.length||S.hintCt>=3)return;
     const pick=empty[Math.floor(Math.random()*empty.length)];S.hints[pick]=true;S.hintCt++;S.perfect=false;
@@ -424,7 +422,7 @@ function calcP6(){
 
     setTimeout(()=>{
         let pts=0;
-        ['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_se4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'].forEach(t=>{
+        ['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'].forEach(t=>{
             if(S.placed[t]){ let b=100; if(S.hints[t])b=25; else if(S.errs[t]>0)b=50; pts+=b; }
         });
         if(S.perfect)pts+=200; S.score+=pts;
@@ -432,8 +430,10 @@ function calcP6(){
         S.results.push({score:pts,max:1600,perfect:S.perfect,hints:S.hintCt});
         document.getElementById('scN').textContent=S.score;document.getElementById('strN').textContent=S.streak;updProg();
         if(S.perfect){bigBurst();toast(`Perfecto! +${pts} pts (+200 bonus)`,'s')}else toast(`+${pts} pts`,'s');
+        
         const last=S.idx>=EX.length-1;
-        document.getElementById('nxtA').innerHTML=`<div class="mt-5 flex justify-end"><button class="btn-p" onclick="${last?'showResults()':'nextEx()'}">${last?'<i class="fas fa-trophy mr-2"></i>Ver resultados':'Siguiente<i class="fas fa-arrow-right ml-2"></i>'}</button></div>`;
+        document.getElementById('nxtA').innerHTML=`<button class="btn-p w-full mt-4" onclick="${last?'showResults()':'nextEx()'}">${last?'<i class="fas fa-trophy mr-2"></i>Ver resultados finales':'Siguiente ejercicio<i class="fas fa-arrow-right ml-2"></i>'}</button>`;
+        document.getElementById('nxtA').scrollIntoView({behavior:'smooth',block:'center'});
     }, 800);
 }
 
