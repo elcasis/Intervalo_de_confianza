@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -64,6 +64,10 @@
         .btn-sm{padding:.5rem 1.2rem;font-size:.85rem;border-radius:8px}
         .btn-icon{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:.4rem .65rem;cursor:pointer;font-size:.82rem;transition:all .2s}
         .btn-icon:hover:not(.used){border-color:var(--accent);color:var(--accent)}.btn-icon.used{opacity:.3;cursor:default}
+        .btn-skip{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);color:var(--accent);border-radius:8px;padding:.35rem .75rem;cursor:pointer;font-size:.78rem;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .btn-skip:hover{background:rgba(56,189,248,.18);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 3px 12px rgba(56,189,248,.2)}
+        .btn-skip:active{transform:translateY(0)}
+        .btn-skip:disabled{opacity:.3;cursor:default;transform:none;box-shadow:none}
         .particle{position:fixed;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:100;animation:pb .65s ease-out forwards}
         @keyframes pb{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
         .toast-c{position:fixed;top:72px;right:14px;z-index:200;display:flex;flex-direction:column;gap:6px}
@@ -71,7 +75,7 @@
         .toast-s{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:var(--success)}.toast-e{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.25);color:var(--error)}.toast-i{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);color:var(--accent)}.toast-out{animation:tout .25s ease forwards}
         @keyframes tin{0%{opacity:0;transform:translateX(30px)}100%{opacity:1;transform:translateX(0)}} @keyframes tout{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(30px)}} @keyframes ein{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
         .score-big{font-size:clamp(2.5rem,9vw,4.5rem);font-weight:700;line-height:1;background:linear-gradient(135deg,#38bdf8,#7dd3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        @media(max-width:640px){.pcard{padding:1.2rem;margin:0 .3rem}.formula-board{font-size:.82rem;padding:.7rem .5rem;line-height:2.2}.fslot{min-width:36px;height:28px;font-size:.8rem;padding:0 5px}.chip{padding:.35rem .65rem;font-size:.88rem}.z-table{font-size:.65rem}}
+        @media(max-width:640px){.pcard{padding:1.2rem;margin:0 .3rem}.formula-board{font-size:.82rem;padding:.7rem .5rem;line-height:2.2}.fslot{min-width:36px;height:28px;font-size:.8rem;padding:0 5px}.chip{padding:.35rem .65rem;font-size:.88rem}.z-table{font-size:.65rem}.btn-skip{font-size:.7rem;padding:.3rem .55rem}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
     </style>
 </head>
@@ -90,7 +94,10 @@
 <div class="screen hidden" id="scrG" style="justify-content:flex-start">
     <div class="top-bar">
         <div class="flex items-center justify-between mb-2">
-            <span class="font-mono text-sm" style="color:var(--muted)" id="pCtr">1 / 10</span>
+            <div class="flex items-center gap-3">
+                <span class="font-mono text-sm" style="color:var(--muted)" id="pCtr">1 / 10</span>
+                <button class="btn-skip" id="skipBtn" onclick="skipEx()"><i class="fas fa-forward-step"></i><span>Siguiente</span></button>
+            </div>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-1.5" style="color:var(--accent);font-size:.82rem"><i class="fas fa-fire"></i><span class="font-mono font-bold" id="strN">0</span></div>
                 <div class="flex items-center gap-1.5"><i class="fas fa-star" style="color:var(--accent);font-size:.82rem"></i><span class="font-mono font-bold" style="color:var(--accent2)" id="scN">0</span></div>
@@ -134,7 +141,7 @@ const EX=[
 {type:'interval', stmt:'Se analiza la resistencia de <strong>15</strong> cables. Media <strong>2500 kg</strong>, desviación <strong>muestral s=50 kg</strong>. Intervalo de confianza al <strong>90%</strong>.', n:15, xbar:2500, sigma:null, s:50, conf:0.90, alpha:0.10, dist:'t', nu:14, crit:1.761, se:12.9099, margin:22.7394, lower:2477.26, upper:2522.74}
 ];
 
-let S={idx:0,phase:1,score:0,streak:0,maxStreak:0,results:[],sel:null,placed:{},errs:{},hints:{},hintCt:0,perfect:true,v:{}};
+let S={idx:0,phase:1,score:0,streak:0,maxStreak:0,results:[],sel:null,placed:{},errs:{},hints:{},hintCt:0,perfect:true,v:{},completed:false};
 
 function toast(m,t='i'){const c=document.getElementById('toastC'),e=document.createElement('div');e.className=`toast toast-${t}`;e.innerHTML=m;c.appendChild(e);setTimeout(()=>{e.classList.add('toast-out');setTimeout(()=>e.remove(),250)},2200)}
 function burst(el){if(!el)return;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=document.getElementById('partC'),cols=['#38bdf8','#34d399','#7dd3fc','#fbbf24','#93c5fd'];for(let i=0;i<14;i++){const p=document.createElement('div');p.className='particle';const a=(Math.PI*2*i)/14+(Math.random()-.5)*.5,d=35+Math.random()*55;p.style.left=cx+'px';p.style.top=cy+'px';p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',Math.sin(a)*d+'px');p.style.backgroundColor=cols[i%cols.length];const sz=5+Math.random()*4;p.style.width=sz+'px';p.style.height=sz+'px';c.appendChild(p);setTimeout(()=>p.remove(),700)}}
@@ -142,8 +149,62 @@ function bigBurst(){const c=document.getElementById('partC'),cols=['#38bdf8','#3
 
 function showScr(id){['scrW','scrG','scrR'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==id))}
 function buildProg(){const b=document.getElementById('progBar');b.innerHTML='';EX.forEach((_,i)=>{const d=document.createElement('div');d.className='pseg';d.id=`sg${i}`;b.appendChild(d)})}
-function updProg(){EX.forEach((_,i)=>{const s=document.getElementById(`sg${i}`);s.className='pseg';if(i<S.idx){const r=S.results[i],ratio=r.score/r.max;s.classList.add(ratio>=.8?'sg':ratio>=.5?'sa':'se')}else if(i===S.idx)s.classList.add('sc')})}
+function updProg(){EX.forEach((_,i)=>{const s=document.getElementById(`sg${i}`);s.className='pseg';if(S.results[i]){const r=S.results[i],ratio=r.score/r.max;s.classList.add(ratio>=.8?'sg':ratio>=.5?'sa':'se')}else if(i===S.idx)s.classList.add('sc')})}
+function updSkipBtn(){const btn=document.getElementById('skipBtn');if(!btn)return;if(S.idx>=EX.length-1){btn.innerHTML='<i class="fas fa-trophy"></i><span>Resultados</span>'}else{btn.innerHTML='<i class="fas fa-forward-step"></i><span>Siguiente</span>'}}
 function lockPhase(ph){document.querySelectorAll(`#fb${ph} .fslot`).forEach(s=>{s.classList.remove('filled');s.classList.add('done');s.style.cursor='default'});document.querySelectorAll(`#ch${ph} .chip`).forEach(c=>c.classList.add('used'));document.getElementById(`ca${ph}`).classList.add('hidden');const b=document.getElementById(`hBtn_ph${ph}`);if(b)b.classList.add('used')}
+
+/* Calcular puntuación parcial según fases completadas y fichas colocadas */
+function calcPartialScore(){
+    let pts=0;
+    const allTypes=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'];
+    allTypes.forEach(t=>{
+        if(S.placed[t]){let b=100;if(S.hints[t])b=25;else if(S.errs[t]>0)b=50;pts+=b;}
+    });
+    /* Bonus por fases completadas (cada fase confirmada) */
+    const completedPhases = S.phase - 1;
+    pts += completedPhases * 50;
+    if(S.perfect && completedPhases===6) pts+=200;
+    return pts;
+}
+
+/* Función para saltar al siguiente ejercicio en cualquier momento */
+function skipEx(){
+    if(S.completed) return;
+    S.completed=true;
+
+    /* Calcular puntuación parcial */
+    const pts = calcPartialScore();
+    const completedPhases = S.phase - 1;
+    const wasPartial = completedPhases < 6;
+
+    if(wasPartial){
+        S.perfect=false;
+        S.streak=0;
+    } else {
+        if(S.perfect){S.streak++;if(S.streak>S.maxStreak)S.maxStreak=S.streak}
+    }
+
+    S.score+=pts;
+    S.results.push({score:pts,max:1600,perfect:S.perfect && !wasPartial,hints:S.hintCt,skipped:wasPartial});
+    document.getElementById('scN').textContent=S.score;
+    document.getElementById('strN').textContent=S.streak;
+    updProg();
+
+    if(wasPartial){
+        toast(`<i class="fas fa-forward-step mr-1"></i>Ejercicio saltado — +${pts} pts parciales`,'i');
+    } else {
+        toast(`+${pts} pts`,'s');
+    }
+
+    /* Avanzar al siguiente o mostrar resultados */
+    if(S.idx>=EX.length-1){
+        setTimeout(()=>showResults(),500);
+    } else {
+        const c=document.getElementById('gCont');
+        c.style.opacity='0';c.style.transform='translateY(-15px)';c.style.transition='opacity .25s,transform .25s';
+        setTimeout(()=>{loadEx(S.idx+1);c.style.opacity='1';c.style.transform='translateY(0)'},260);
+    }
+}
 
 function mkChips(phase, ex){
     let ok=[], dist=[];
@@ -197,11 +258,11 @@ function mkChips(phase, ex){
 
 function loadEx(idx){
     const ex=EX[idx];
-    S.idx=idx;S.phase=1;S.sel=null;S.placed={};S.errs={};S.hints={};S.hintCt=0;S.perfect=true;
+    S.idx=idx;S.phase=1;S.sel=null;S.placed={};S.errs={};S.hints={};S.hintCt=0;S.perfect=true;S.completed=false;
     document.getElementById('pCtr').textContent=`${idx+1} / ${EX.length}`;
     document.getElementById('scN').textContent=S.score;
     document.getElementById('strN').textContent=S.streak;
-    updProg();
+    updProg();updSkipBtn();
 
     const isSample = ex.type === 'sample_size';
     const symbol = ex.sigma ? 'σ' : 's';
@@ -298,9 +359,10 @@ function loadEx(idx){
 
 function loadChipsForPhase(ph, ex) { const c = mkChips(ph, ex); document.getElementById(`ch${ph}`).innerHTML = c.map(c=>`<div class="chip" data-cid="${c.id}" data-ph="${ph}" onclick="onChip('${c.id}',${ph})">${c.d}</div>`).join(''); }
 
-function onChip(cid,ph){if(S.phase!==ph)return;const el=document.querySelector(`#ch${ph} .chip[data-cid="${cid}"]`);if(!el||el.classList.contains('used'))return;document.querySelectorAll(`#ch${ph} .chip.sel`).forEach(c=>c.classList.remove('sel'));if(S.sel===cid){S.sel=null;return}S.sel=cid;el.classList.add('sel')}
+function onChip(cid,ph){if(S.phase!==ph||S.completed)return;const el=document.querySelector(`#ch${ph} .chip[data-cid="${cid}"]`);if(!el||el.classList.contains('used'))return;document.querySelectorAll(`#ch${ph} .chip.sel`).forEach(c=>c.classList.remove('sel'));if(S.sel===cid){S.sel=null;return}S.sel=cid;el.classList.add('sel')}
 
 function onSlot(el){
+    if(S.completed)return;
     const type=el.dataset.type;const ph=S.phase;if(el.classList.contains('filled')){rmType(type,ph);return}if(!S.sel){toast('Selecciona una ficha primero','i');return}
     const validIds=['v_d1','v_n1','v_x1','v_s1','v_e1','v_c2','v_a2','v_z3','v_num4','v_sq4','v_crit4','v_sig4','v_crit5','v_se5','v_e5','v_li6','v_ls6','v_n6'];
     if(S.sel===type && validIds.includes(type)) plType(type,ph);
@@ -322,6 +384,7 @@ function chkFilled(ph){
 }
 
 function useHint(){
+    if(S.completed)return;
     let ph=S.phase, types=[], labels={v_d1:'Distribución',v_n1:'n',v_x1:'x̄',v_s1:'σ/s',v_e1:'Error e',v_c2:'Confianza',v_a2:'α/2',v_z3:'Valor Crítico',v_num4:'Num',v_sq4:'√n',v_crit4:'Crítico',v_sig4:'Sigma',v_crit5:'Crítico',v_se5:'SE',v_e5:'Margen e',v_li6:'Límite Inf',v_ls6:'Límite Sup',v_n6:'Tamaño n'};
     if(ph===1)types=['v_d1','v_n1','v_x1','v_s1','v_e1']; else if(ph===2)types=['v_c2','v_a2']; else if(ph===3)types=['v_z3']; else if(ph===4)types=['v_num4','v_sq4','v_crit4','v_sig4']; else if(ph===5)types=['v_crit5','v_se5','v_e5']; else if(ph===6)types=['v_li6','v_ls6','v_n6'];
     const empty=types.filter(t=>!S.placed[t]).filter(t=>document.querySelector(`#fb${ph} .fslot[data-type="${t}"]`)); 
@@ -381,6 +444,7 @@ function calcP5(){
 }
 
 function calcP6(){
+    if(S.completed)return;
     const ex=EX[S.idx]; lockPhase(6);
     const bridge=document.getElementById('br6');bridge.classList.remove('hidden');
     const last=S.idx>=EX.length-1;
@@ -398,8 +462,9 @@ function calcP6(){
     });
     if(S.perfect)pts+=200; S.score+=pts;
     if(S.perfect){S.streak++;if(S.streak>S.maxStreak)S.maxStreak=S.streak}else S.streak=0;
-    S.results.push({score:pts,max:1600,perfect:S.perfect,hints:S.hintCt});
-    document.getElementById('scN').textContent=S.score;document.getElementById('strN').textContent=S.streak;updProg();
+    S.completed=true;
+    S.results.push({score:pts,max:1600,perfect:S.perfect,hints:S.hintCt,skipped:false});
+    document.getElementById('scN').textContent=S.score;document.getElementById('strN').textContent=S.streak;updProg();updSkipBtn();
     if(S.perfect){bigBurst();toast(`Perfecto! +${pts} pts (+200 bonus)`,'s')}else toast(`+${pts} pts`,'s');
     
     const nxtA=document.getElementById('nxtA');
@@ -421,13 +486,13 @@ function showResults(){
         <div class="text-center p-3 rounded-xl" style="background:var(--card);border:1px solid var(--border)"><div class="text-2xl font-bold font-mono" style="color:var(--accent)">${Math.round(pct)}%</div><div class="text-xs mt-1" style="color:var(--muted)">Precisión</div></div>
         <div class="text-center p-3 rounded-xl" style="background:var(--card);border:1px solid var(--border)"><div class="text-2xl font-bold font-mono" style="color:var(--fg)">${S.maxStreak}</div><div class="text-xs mt-1" style="color:var(--muted)">Mejor racha</div></div>
     </div>
-    <div class="text-left mb-8"><div class="text-sm font-semibold mb-3" style="color:var(--muted)">Detalle por ejercicio</div><div class="flex flex-col gap-2">${S.results.map((r,i)=>{const ratio=r.score/r.max,bc=ratio>=.8?'var(--success)':ratio>=.5?'var(--accent)':'var(--error)';const short=EX[i].stmt.replace(/<[^>]*>/g,'').substring(0,50)+'...';return`<div class="rcard"><div class="flex items-center justify-between mb-1.5"><div class="flex items-center gap-2"><span class="text-xs font-mono" style="color:var(--muted)">${i+1}.</span><span class="text-xs" style="color:var(--fg)">${short}</span>${r.perfect?'<i class="fas fa-crown" style="color:var(--accent2);font-size:.7rem"></i>':''}</div><span class="text-sm font-mono font-bold" style="color:${bc}">${r.score}/${r.max}</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div class="bar-f" style="width:${ratio*100}%;background:${bc}"></div></div></div>`}).join('')}</div></div>
+    <div class="text-left mb-8"><div class="text-sm font-semibold mb-3" style="color:var(--muted)">Detalle por ejercicio</div><div class="flex flex-col gap-2">${S.results.map((r,i)=>{const ratio=r.score/r.max,bc=ratio>=.8?'var(--success)':ratio>=.5?'var(--accent)':'var(--error)';const short=EX[i].stmt.replace(/<[^>]*>/g,'').substring(0,50)+'...';const skipTag=r.skipped?'<span style="color:var(--warn);font-size:.65rem;font-weight:600;margin-left:6px">SALTADO</span>':'';return`<div class="rcard"><div class="flex items-center justify-between mb-1.5"><div class="flex items-center gap-2"><span class="text-xs font-mono" style="color:var(--muted)">${i+1}.</span><span class="text-xs" style="color:var(--fg)">${short}</span>${r.perfect?'<i class="fas fa-crown" style="color:var(--accent2);font-size:.7rem"></i>':''}${skipTag}</div><span class="text-sm font-mono font-bold" style="color:${bc}">${r.score}/${r.max}</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div class="bar-f" style="width:${ratio*100}%;background:${bc}"></div></div></div>`}).join('')}</div></div>
     <div class="flex gap-3 justify-center flex-wrap"><button class="btn-p" onclick="startGame()"><i class="fas fa-redo mr-2"></i>Jugar de nuevo</button><button class="btn-sm" onclick="showScr('scrW')" style="background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:.65rem 1.8rem;cursor:pointer"><i class="fas fa-home mr-2"></i>Inicio</button></div>`;
     if(pct>=70)bigBurst();
 }
 
-function startGame(){S={idx:0,phase:1,score:0,streak:0,maxStreak:0,results:[],sel:null,placed:{},errs:{},hints:{},hintCt:0,perfect:true,v:{}};showScr('scrG');buildProg();loadEx(0)}
-document.addEventListener('click',e=>{if(!e.target.closest('.chip')&&!e.target.closest('.fslot')&&S.sel){document.querySelectorAll(`#ch${S.phase} .chip.sel`).forEach(c=>c.classList.remove('sel'));S.sel=null}});
+function startGame(){S={idx:0,phase:1,score:0,streak:0,maxStreak:0,results:[],sel:null,placed:{},errs:{},hints:{},hintCt:0,perfect:true,v:{},completed:false};showScr('scrG');buildProg();loadEx(0)}
+document.addEventListener('click',e=>{if(!e.target.closest('.chip')&&!e.target.closest('.fslot')&&!e.target.closest('.btn-skip')&&S.sel){document.querySelectorAll(`#ch${S.phase} .chip.sel`).forEach(c=>c.classList.remove('sel'));S.sel=null}});
 </script>
 </body>
 </html>
